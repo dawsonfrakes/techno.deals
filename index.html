@@ -7,6 +7,8 @@
 </head>
 <body>
   <h1>techno.deals</h1>
+  <div id="laptops-container"></div>
+  <iframe src="https://github.com/sponsors/dawsonfrakes/button" title="Sponsor dawsonfrakes" height="32" width="114" style="border: 0; border-radius: 6px;"></iframe>
   <script>
     const laptops = [
       {
@@ -117,10 +119,10 @@
       },
     ];
 
-    const laptops_div = document.createElement("div");
+    const laptops_div = document.getElementById("laptops-container");
     laptops_div.style.border = "2px solid lightgray";
     laptops_div.style.padding = "10px";
-    document.body.appendChild(laptops_div);
+    laptops_div.style.margin = "10px 0";
 
     for (const laptop of laptops) {
       const div = document.createElement("div");
