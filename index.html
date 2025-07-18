@@ -10,209 +10,111 @@
   <div id="laptops-container"></div>
   <iframe src="https://github.com/sponsors/dawsonfrakes/button" title="Sponsor dawsonfrakes" height="32" width="114" style="border: 0; border-radius: 6px;"></iframe>
   <script>
-    const laptops = [
-      {
-        codename: "z13",
-        name: {
-          brand: "ASUS",
-          lineup: "ROG",
-          sublineup: "Flow",
-          model: "Z13",
-        },
-        pros: ["CPU/GPU Power", "Temperature Management", "High Refresh Rate"],
-        cons: ["Tablet Form Factor", "Price"],
-        options: {
-          cpus: [
-            {
-              brand: "AMD",
-              lineup: "Ryzen",
-              sublineup: "AI Max+",
-              model: "395",
-            },
-          ],
-          rams: [
-            {
-              amount: 32,
-              amount_units: "GB",
-              kind: "LPDDR5X",
-              speed: 8000,
-              speed_units: "MT/s",
-              soldered: true,
-            },
-            {
-              amount: 64,
-              amount_units: "GB",
-              kind: "LPDDR5X",
-              speed: 8000,
-              speed_units: "MT/s",
-              soldered: true,
-            },
-          ],
-          oses: [
-            {
-              brand: "Microsoft",
-              lineup: "Windows",
-              sublineup: "11",
-              model: "Home",
-            },
-          ],
-        },
-        configs: {
-          0 /*CPU_395*/: {
-          0 /*RAM_32GB*/: {
-          0 /*OS_WINDOWS11HOME*/: {
-            price: 2256,
-          },},},
-        },
-      },
-      {
-        codename: "x1c13",
-        name: {
-          brand: "Lenovo",
-          lineup: "ThinkPad",
-          sublineup: "X1 Carbon",
-          model: "Gen 13 Aura Edition",
-        },
-        pros: ["Weight"],
-        cons: ["Price"],
-        options: {
-          cpus: [
-            {
-              brand: "Intel",
-              lineup: "Core Ultra",
-              sublineup: "Series 2",
-              model: "226V",
-            },
-          ],
-          rams: [
-            {
-              amount: 16,
-              amount_units: "GB",
-              kind: "LPDDR5X",
-              speed: 8533,
-              speed_units: "MT/s",
-              soldered: true,
-            },
-          ],
-          oses: [
-            {
-              brand: "Microsoft",
-              lineup: "Windows",
-              sublineup: "11",
-              model: "Home",
-            },
-            {
-              brand: "Microsoft",
-              lineup: "Windows",
-              sublineup: "11",
-              model: "Pro",
-            },
-          ],
-        },
-        configs: {
-          0 /*CPU_226V*/: {
-          0 /*RAM_16GB*/: {
-          0 /*OS_WINDOWS11HOME*/: {
-            price: 2256,
-          },},},
-        },
-      },
-    ];
+    function createContent(laptops) {
+      const laptops_div = document.getElementById("laptops-container");
+      laptops_div.style.border = "2px solid lightgray";
+      laptops_div.style.padding = "10px";
+      laptops_div.style.margin = "10px 0";
 
-    const laptops_div = document.getElementById("laptops-container");
-    laptops_div.style.border = "2px solid lightgray";
-    laptops_div.style.padding = "10px";
-    laptops_div.style.margin = "10px 0";
+      for (const laptop of laptops) {
+        const div = document.createElement("div");
+        div.className = "laptop";
+        laptops_div.appendChild(div);
 
-    for (const laptop of laptops) {
-      const div = document.createElement("div");
-      div.className = "laptop";
-      laptops_div.appendChild(div);
+        const cover = document.createElement("img");
+        cover.width = 128;
+        cover.src = `images/${laptop.codename}.webp`;
+        div.appendChild(cover);
 
-      const cover = document.createElement("img");
-      cover.width = 128;
-      cover.src = `images/${laptop.codename}.webp`;
-      div.appendChild(cover);
+        const title_span = document.createElement("span");
+        title_span.className = "laptop-title";
+        title_span.textContent = `${laptop.name.brand} ${laptop.name.lineup} ${laptop.name.sublineup} ${laptop.name.model}`;
+        div.appendChild(title_span);
 
-      const title_span = document.createElement("span");
-      title_span.className = "laptop-title";
-      title_span.textContent = `${laptop.name.brand} ${laptop.name.lineup} ${laptop.name.sublineup} ${laptop.name.model}`;
-      div.appendChild(title_span);
+        for (let cpu_index = 0; cpu_index < laptop.options.cpus.length; cpu_index += 1) {
+          for (let ram_index = 0; ram_index < laptop.options.rams.length; ram_index += 1) {
+            for (let os_index = 0; os_index < laptop.options.oses.length; os_index += 1) {
+              const cpu = laptop.options.cpus[cpu_index];
+              const ram = laptop.options.rams[ram_index];
+              const os = laptop.options.oses[os_index];
+              const config = laptop.configs[`${cpu.codename}|${ram.codename}|${os.codename}`];
+              if (!config) continue;
 
-      for (let cpu_index = 0; cpu_index < laptop.options.cpus.length; cpu_index += 1) {
-        for (let ram_index = 0; ram_index < laptop.options.rams.length; ram_index += 1) {
-          for (let os_index = 0; os_index < laptop.options.oses.length; os_index += 1) {
-            const exists =
-              cpu_index in laptop.configs &&
-              ram_index in laptop.configs[cpu_index] &&
-              os_index in laptop.configs[cpu_index][ram_index];
-            if (!exists) continue;
-            const cpu = laptop.options.cpus[cpu_index];
-            const ram = laptop.options.rams[ram_index];
-            const os = laptop.options.oses[os_index];
-            const config = laptop.configs[cpu_index][ram_index][os_index];
-
-            const config_div = document.createElement("div");
-            config_div.className = "laptop-config";
-            const cpu_span = document.createElement("span");
-            cpu_span.textContent = `${cpu.brand} ${cpu.lineup} ${cpu.sublineup} ${cpu.model}`;
-            config_div.appendChild(cpu_span);
-            const ram_span = document.createElement("span");
-            ram_span.textContent = `${ram.amount}${ram.amount_units} ${ram.kind}-${ram.speed}${ram.speed_units} ${ram.soldered ? "Soldered" : "Non-soldered"}`;
-            config_div.appendChild(ram_span);
-            const os_span = document.createElement("span");
-            os_span.textContent = `${os.brand} ${os.lineup} ${os.sublineup} ${os.model}`;
-            config_div.appendChild(os_span);
-            const price_span = document.createElement("span");
-            price_span.textContent = new Intl.NumberFormat("en-us", {style: "currency", "currency": "USD", maximumFractionDigits: 0}).format(config.price);
-            config_div.appendChild(price_span);
-            div.appendChild(config_div);
+              const config_div = document.createElement("div");
+              config_div.className = "laptop-config";
+              const cpu_span = document.createElement("span");
+              cpu_span.textContent = `${cpu.brand} ${cpu.lineup} ${cpu.sublineup} ${cpu.model}`;
+              config_div.appendChild(cpu_span);
+              const ram_span = document.createElement("span");
+              ram_span.textContent = `${ram.amount}${ram.amount_units} ${ram.kind}-${ram.speed}${ram.speed_units} ${ram.soldered ? "Soldered" : "Non-soldered"}`;
+              config_div.appendChild(ram_span);
+              const os_span = document.createElement("span");
+              os_span.textContent = `${os.brand} ${os.lineup} ${os.sublineup} ${os.model}`;
+              config_div.appendChild(os_span);
+              const price_span = document.createElement("span");
+              price_span.textContent = new Intl.NumberFormat("en-us", {style: "currency", "currency": "USD", maximumFractionDigits: 0}).format(config.price);
+              config_div.appendChild(price_span);
+              div.appendChild(config_div);
+            }
           }
         }
+
+        const pros_div = document.createElement("div");
+        pros_div.className = "laptop-pros";
+        laptop.pros.map(pro => {
+          const node = document.createElement("span");
+          node.textContent = pro;
+          pros_div.appendChild(node);
+        });
+        div.appendChild(pros_div);
+
+        const cons_div = document.createElement("div");
+        cons_div.className = "laptop-cons";
+        laptop.cons.map(con => {
+          const node = document.createElement("span");
+          node.textContent = con;
+          cons_div.appendChild(node);
+        });
+        div.appendChild(cons_div);
       }
-
-      const pros_div = document.createElement("div");
-      pros_div.className = "laptop-pros";
-      laptop.pros.map(pro => {
-        const node = document.createElement("span");
-        node.textContent = pro;
-        pros_div.appendChild(node);
-      });
-      div.appendChild(pros_div);
-
-      const cons_div = document.createElement("div");
-      cons_div.className = "laptop-cons";
-      laptop.cons.map(con => {
-        const node = document.createElement("span");
-        node.textContent = con;
-        cons_div.appendChild(node);
-      });
-      div.appendChild(cons_div);
     }
 
-    document.body.style.fontFamily = "Arial, Helvetica, sans-serif";
-    document.body.style.backgroundColor = "#323232";
-    document.body.style.color = "lightgray";
-    document.body.style.lineHeight = "1.4";
+    function renderContent() {
+      document.body.style.fontFamily = "Arial, Helvetica, sans-serif";
+      document.body.style.backgroundColor = "#323232";
+      document.body.style.color = "lightgray";
+      document.body.style.lineHeight = "1.4";
 
-    document.querySelectorAll(".laptop-title").forEach(node => {
-      node.style.fontSize = "24px";
-      node.style.fontWeight = "bold";
-    })
-    document.querySelectorAll(".laptop-config *:first-child").forEach(node => {
-      node.textContent = "\u2022 " + node.textContent;
-    });
-    document.querySelectorAll(".laptop-config :not(:last-child)").forEach(node => {
-      node.textContent += " | ";
-    });
-    document.querySelectorAll(".laptop-pros :first-child").forEach(node => (node.textContent = "Pros: " + node.textContent));
-    document.querySelectorAll(".laptop-pros :not(:last-child)").forEach(node => {
-      node.textContent += " | ";
-    });
-    document.querySelectorAll(".laptop-cons :first-child").forEach(node => (node.textContent = "Cons: " + node.textContent));
-    document.querySelectorAll(".laptop-cons :not(:last-child)").forEach(node => {
-      node.textContent += " | ";
-    });
+      document.querySelectorAll(".laptop-title").forEach(node => {
+        node.style.fontSize = "24px";
+        node.style.fontWeight = "bold";
+      })
+      document.querySelectorAll(".laptop-config *:first-child").forEach(node => {
+        node.textContent = "\u2022 " + node.textContent;
+      });
+      document.querySelectorAll(".laptop-config :not(:last-child)").forEach(node => {
+        node.textContent += " | ";
+      });
+      document.querySelectorAll(".laptop-pros :first-child").forEach(node => {
+        node.textContent = "Pros: " + node.textContent;
+      });
+      document.querySelectorAll(".laptop-pros :not(:last-child)").forEach(node => {
+        node.textContent += " | ";
+      });
+      document.querySelectorAll(".laptop-cons :first-child").forEach(node => {
+        node.textContent = "Cons: " + node.textContent;
+      });
+      document.querySelectorAll(".laptop-cons :not(:last-child)").forEach(node => {
+        node.textContent += " | ";
+      });
+    }
+
+    (async () => {
+      const request = await fetch("./deals.json");
+      const json = await request.json();
+      createContent(json.laptops);
+      renderContent();
+    })();
   </script>
 </body>
 </html>
