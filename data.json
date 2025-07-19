@@ -1,5 +1,11 @@
 {
   "cpus": {
+    "AMD370": {
+      "brand": "AMD",
+      "lineup": "Ryzen",
+      "sublineup": "AI 9 HX",
+      "model": "370"
+    },
     "AMD395": {
       "brand": "AMD",
       "lineup": "Ryzen",
@@ -14,6 +20,14 @@
     }
   },
   "rams": {
+    "DDR5_5600_8GB": {
+      "amount": 8,
+      "amount_units": "GB",
+      "kind": "DDR5",
+      "speed": 5600,
+      "speed_units": "MHz",
+      "soldered": false
+    },
     "LPDDR5X16GB8533": {
       "amount": 16,
       "amount_units": "GB",
@@ -40,6 +54,12 @@
     }
   },
   "oses": {
+    "NONE": {
+      "brand": "None",
+      "lineup": "",
+      "sublineup": "",
+      "model": ""
+    },
     "WINDOWS11HOME": {
       "brand": "Microsoft",
       "lineup": "Windows",
@@ -54,6 +74,26 @@
     }
   },
   "laptops": {
+    "fw13": {
+      "link": "https://frame.work/products/laptop13-diy-amd-ai300",
+      "name": {
+        "brand": "Framework",
+        "lineup": "Laptop",
+        "sublineup": "",
+        "model": "13"
+      },
+      "pros": [
+        "Repairability"
+      ],
+      "cons": [
+        "Price"
+      ],
+      "configs": {
+        "AMD370|DDR5_5600_8GB|NONE": {
+          "price": 1809
+        }
+      }
+    },
     "z13": {
       "link": "https://rog.asus.com/us/laptops/rog-flow/rog-flow-z13-2025",
       "name": {
@@ -63,8 +103,8 @@
         "model": "Z13"
       },
       "pros": [
-        "CPU/GPU Power",
-        "Temperature Management",
+        "CPU/GPU Performance",
+        "Heat Dissipation",
         "High Refresh Rate"
       ],
       "cons": [

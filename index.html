@@ -64,9 +64,32 @@
       `;
     };
 
+    const FilterSelector = ({name, all, filters, setFilters, itemNameFormatter}) => {
+      return html`
+        <details>
+          <summary>${name}</summary>
+          <ul>
+            ${all.map((value, i) => html`<li key=${i}><${Filter} filters=${filters} setFilters=${setFilters} key=${i} index=${i} name=${itemNameFormatter(value)} /></li>`)}
+          </ul>
+        </details>
+      `;
+    };
+
     const App = ({laptops, cpus, rams, oses}) => {
-      const allBrands = Object.entries(laptops).reduce((acc, [key, value]) => { acc.push(value.name.brand); return acc; }, []);
+      const id = useId();
+
+      const allBrands = Object.entries(laptops).reduce((acc, [key, value]) => { acc.push(value.name.brand); return acc; }, []).sort();
       const [brandFilters, setBrandFilters] = useState(allBrands.map(brand => true));
+      const allCpus = [...new Set(Object.entries(laptops).reduce((acc, [key, value]) => { Object.keys(value.configs).forEach(config => acc.push(config.split("|")[0])); return acc; }, []).sort())];
+      const [cpuFilters, setCpuFilters] = useState(allCpus.map(cpu => true));
+      const allRams = [...new Set(Object.entries(laptops).reduce((acc, [key, value]) => { Object.keys(value.configs).forEach(config => acc.push(config.split("|")[1])); return acc; }, []).sort())];
+      const [ramFilters, setRamFilters] = useState(allRams.map(ram => true));
+      const allOses = [...new Set(Object.entries(laptops).reduce((acc, [key, value]) => { Object.keys(value.configs).forEach(config => acc.push(config.split("|")[2])); return acc; }, []).sort())];
+      const [osFilters, setOsFilters] = useState(allOses.map(os => true));
+      const [minPrice, setMinPrice] = useState(0);
+      const absMaxConfigPrice = Object.entries(laptops).reduce((acc, [key, value]) => Math.max(acc, Object.entries(value.configs).reduce((acc2, [key, value]) => Math.max(acc2, value.price), 0)), 0);
+      const [maxPrice, setMaxPrice] = useState(absMaxConfigPrice);
+
       return html`
         <style>
           body {
@@ -80,10 +103,32 @@
             color: lightgray;
           }
         </style>
-        <h1>techno.deals</h1>
-        ${allBrands.map((brand, i) => html`<${Filter} filters=${brandFilters} setFilters=${setBrandFilters} key=${i} index=${i} name=${brand} />`)}
+        <h1>TechnoDeals</h1>
+        <p style=${{textDecoration: "underline"}}>Filter</p>
+        <${FilterSelector} name="Brand" all=${allBrands} filters=${brandFilters} setFilters=${setBrandFilters} itemNameFormatter=${value => value} />
+        <${FilterSelector} name="CPU Type" all=${allCpus} filters=${cpuFilters} setFilters=${setCpuFilters} itemNameFormatter=${cpu => `${cpus[cpu].brand} ${cpus[cpu].lineup} ${cpus[cpu].sublineup} ${cpus[cpu].model}`} />
+        <${FilterSelector} name="Ram Type" all=${allRams} filters=${ramFilters} setFilters=${setRamFilters} itemNameFormatter=${ram => `${rams[ram].amount}${rams[ram].amount_units} ${rams[ram].kind}-${rams[ram].speed}${rams[ram].speed_units} ${rams[ram].soldered ? "Soldered" : "Non-soldered"}`} />
+        <${FilterSelector} name="Operating System" all=${allOses} filters=${osFilters} setFilters=${setOsFilters} itemNameFormatter=${os => `${oses[os].brand} ${oses[os].lineup} ${oses[os].sublineup} ${oses[os].model}`} />
+        <ul>
+          <li>
+            <label for=${id + "-min-price"}>Minimum Price: $</label>
+            <input id=${id + "-min-price"} type="number" min="0" max=${maxPrice} value=${minPrice} onInput=${e => setMinPrice(e.target.value > maxPrice ? maxPrice : e.target.value)} />
+          </li>
+          <li>
+            <label for=${id + "-max-price"}>Maximum Price: $</label>
+            <input id=${id + "-max-price"} type="number" min=${minPrice} max=${absMaxConfigPrice} value=${maxPrice} onInput=${e => setMaxPrice(e.target.value < minPrice ? minPrice : e.target.value)} />
+          </li>
+        </ul>
+        <p style=${{textDecoration: "underline"}}>Sort</p>
+        <input id=${id + "-brand-name-sort"} type="radio" checked />
+        <label for=${id + "-brand-name-sort"}>Brand Name</label>
         ${Object.keys(laptops)
           .filter(laptop_codename => brandFilters[allBrands.indexOf(laptops[laptop_codename].name.brand)])
+          .filter(laptop_codename => { for (const config in laptops[laptop_codename].configs) { if (cpuFilters[allCpus.indexOf(config.split("|")[0])]) return true; } return false; })
+          .filter(laptop_codename => { for (const config in laptops[laptop_codename].configs) { if (ramFilters[allRams.indexOf(config.split("|")[1])]) return true; } return false; })
+          .filter(laptop_codename => { for (const config in laptops[laptop_codename].configs) { if (osFilters[allOses.indexOf(config.split("|")[2])]) return true; } return false; })
+          .filter(laptop_codename => { for (const config of Object.values(laptops[laptop_codename].configs)) { if (config.price >= minPrice && config.price <= maxPrice) return true; } return false; })
+          .sort((a_codename, b_codename) => laptops[a_codename].name.brand.localeCompare(laptops[b_codename].name.brand))
           .map((laptop_codename, i) => html`<${Laptop} key=${i} cpus=${cpus} rams=${rams} oses=${oses} laptops=${laptops} laptop_codename=${laptop_codename} />`)}
         <div><iframe src="https://github.com/sponsors/dawsonfrakes/button" title="Sponsor dawsonfrakes" height="32" width="114" style="border: 0; border-radius: 6px;"></iframe></div>
       `;
