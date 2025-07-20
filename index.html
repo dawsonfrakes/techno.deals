@@ -7,10 +7,10 @@
 </head>
 <body>
   <script type="module">
-    import {h, render} from 'https://esm.sh/preact';
-    import {useState, useId} from "https://esm.sh/preact/hooks";
-    import htm from 'https://esm.sh/htm';
-    const html = htm.bind(h);
+    import {createElement, useState, useId} from "https://esm.sh/react";
+    import ReactDOMClient from "https://esm.sh/react-dom/client";
+    import htm from "https://esm.sh/htm";
+    const html = htm.bind(createElement);
 
     const Config = ({cpus, rams, oses, laptop, config}) => {
       const [cpu_codename, ram_codename, os_codename] = config.split("|");
@@ -20,16 +20,17 @@
 
       return html`
         <p>
-          <span>\u2022 </span>
-          <span>${cpu.brand} ${cpu.lineup} ${cpu.sublineup} ${cpu.model} | </span>
-          <span>${ram.amount}${ram.amount_units} ${ram.kind}-${ram.speed}${ram.speed_units} ${ram.soldered ? "Soldered" : "Non-soldered"} | </span>
-          <span>${os.brand} ${os.lineup} ${os.sublineup} ${os.model} | </span>
-          ${new Intl.NumberFormat("en-us", {style: "currency", currency: "USD", maximumFractionDigits: 0}).format(laptop.configs[config].price)}
+          <span>CPU: ${cpu.brand} ${cpu.lineup} ${cpu.sublineup} ${cpu.model} | </span>
+          <span>RAM: ${ram.amount}${ram.amount_units} ${ram.kind}-${ram.speed}${ram.speed_units} ${ram.soldered ? "Soldered" : "Non-soldered"} | </span>
+          <span>OS: ${os.brand} ${os.lineup} ${os.sublineup} ${os.model} | </span>
+          Price: ${new Intl.NumberFormat("en-us", {style: "currency", currency: "USD", maximumFractionDigits: 0}).format(laptop.configs[config].price)}
         </p>
       `;
     };
 
     const Laptop = ({cpus, rams, oses, laptops, laptop_codename}) => {
+      const [imageLoaded, setImageLoaded] = useState(false);
+
       const laptop = laptops[laptop_codename];
       const style = {
         border: "2px solid lightgray",
@@ -42,9 +43,16 @@
       };
       return html`
         <div style=${style}>
-          <img src="images/${laptop_codename}.webp" alt=${laptop_codename} width=128 />
+          <div>
+            <a href=${laptop.link}>
+            ${html`<div style=${{display: imageLoaded ? "none" : "inline-block", width: "128px", height: "128px", backgroundColor: "black"}}></div>`}
+            <img src="images/${laptop_codename}.webp" alt=${laptop_codename} width="128" style=${{display: imageLoaded ? "inline-block" : "none"}} onLoad=${() => setImageLoaded(true)} />
+            </a>
+          </div>
           <a style=${name_style} href=${laptop.link}>${laptop.name.brand} ${laptop.name.lineup} ${laptop.name.sublineup} ${laptop.name.model}</a>
-          ${Object.keys(laptop.configs).map((config, i) => html`<${Config} key=${i} cpus=${cpus} rams=${rams} oses=${oses} laptop=${laptop} config=${config} />`)}
+          <ul>
+            ${Object.keys(laptop.configs).map((config, i) => html`<li key=${i}><${Config} key=${i} cpus=${cpus} rams=${rams} oses=${oses} laptop=${laptop} config=${config} /></li>`)}
+          </ul>
           <p>Pros: ${laptop.pros.join(" | ")}</p>
           <p>Cons: ${laptop.cons.join(" | ")}</p>
         </div>
@@ -103,25 +111,34 @@
             color: lightgray;
           }
         </style>
-        <h1>TechnoDeals</h1>
-        <p style=${{textDecoration: "underline"}}>Filter</p>
-        <${FilterSelector} name="Brand" all=${allBrands} filters=${brandFilters} setFilters=${setBrandFilters} itemNameFormatter=${value => value} />
-        <${FilterSelector} name="CPU Type" all=${allCpus} filters=${cpuFilters} setFilters=${setCpuFilters} itemNameFormatter=${cpu => `${cpus[cpu].brand} ${cpus[cpu].lineup} ${cpus[cpu].sublineup} ${cpus[cpu].model}`} />
-        <${FilterSelector} name="Ram Type" all=${allRams} filters=${ramFilters} setFilters=${setRamFilters} itemNameFormatter=${ram => `${rams[ram].amount}${rams[ram].amount_units} ${rams[ram].kind}-${rams[ram].speed}${rams[ram].speed_units} ${rams[ram].soldered ? "Soldered" : "Non-soldered"}`} />
-        <${FilterSelector} name="Operating System" all=${allOses} filters=${osFilters} setFilters=${setOsFilters} itemNameFormatter=${os => `${oses[os].brand} ${oses[os].lineup} ${oses[os].sublineup} ${oses[os].model}`} />
-        <ul>
-          <li>
-            <label for=${id + "-min-price"}>Minimum Price: $</label>
-            <input id=${id + "-min-price"} type="number" min="0" max=${maxPrice} value=${minPrice} onInput=${e => setMinPrice(e.target.value > maxPrice ? maxPrice : e.target.value)} />
-          </li>
-          <li>
-            <label for=${id + "-max-price"}>Maximum Price: $</label>
-            <input id=${id + "-max-price"} type="number" min=${minPrice} max=${absMaxConfigPrice} value=${maxPrice} onInput=${e => setMaxPrice(e.target.value < minPrice ? minPrice : e.target.value)} />
-          </li>
-        </ul>
-        <p style=${{textDecoration: "underline"}}>Sort</p>
-        <input id=${id + "-brand-name-sort"} type="radio" checked />
-        <label for=${id + "-brand-name-sort"}>Brand Name</label>
+        <h1 style=${{textShadow: "#fc0000 1px 0 10px"}}>TechnoDeals</h1>
+        <p></p>
+        <div style=${{display: "flex", flexWrap: "wrap", alignItems: "start", justifyContent: "center"}}>
+          <fieldset>
+            <legend>Filter</legend>
+            <${FilterSelector} name="Brand" all=${allBrands} filters=${brandFilters} setFilters=${setBrandFilters} itemNameFormatter=${value => value} />
+            <${FilterSelector} name="CPU Type" all=${allCpus} filters=${cpuFilters} setFilters=${setCpuFilters} itemNameFormatter=${cpu => `${cpus[cpu].brand} ${cpus[cpu].lineup} ${cpus[cpu].sublineup} ${cpus[cpu].model}`} />
+            <${FilterSelector} name="Ram Type" all=${allRams} filters=${ramFilters} setFilters=${setRamFilters} itemNameFormatter=${ram => `${rams[ram].amount}${rams[ram].amount_units} ${rams[ram].kind}-${rams[ram].speed}${rams[ram].speed_units} ${rams[ram].soldered ? "Soldered" : "Non-soldered"}`} />
+            <${FilterSelector} name="Operating System" all=${allOses} filters=${osFilters} setFilters=${setOsFilters} itemNameFormatter=${os => `${oses[os].brand} ${oses[os].lineup} ${oses[os].sublineup} ${oses[os].model}`} />
+            <ul>
+              <li>
+                <label for=${id + "-min-price"}>Minimum Price: $</label>
+                <input id=${id + "-min-price"} type="number" min="0" max=${maxPrice} value=${minPrice} onInput=${e => setMinPrice(e.target.value > maxPrice ? maxPrice : e.target.value)} />
+              </li>
+              <li>
+                <label for=${id + "-max-price"}>Maximum Price: $</label>
+                <input id=${id + "-max-price"} type="number" min=${minPrice} max=${absMaxConfigPrice} value=${maxPrice} onInput=${e => setMaxPrice(e.target.value < minPrice ? minPrice : e.target.value)} />
+              </li>
+            </ul>
+          </fieldset>
+          <fieldset>
+            <legend>Sort</legend>
+            <div>
+              <input id=${id + "-brand-name-sort"} type="radio" checked />
+              <label for=${id + "-brand-name-sort"}>Brand Name</label>
+            </div>
+          </fieldset>
+        </div>
         ${Object.keys(laptops)
           .filter(laptop_codename => brandFilters[allBrands.indexOf(laptops[laptop_codename].name.brand)])
           .filter(laptop_codename => { for (const config in laptops[laptop_codename].configs) { if (cpuFilters[allCpus.indexOf(config.split("|")[0])]) return true; } return false; })
@@ -130,14 +147,14 @@
           .filter(laptop_codename => { for (const config of Object.values(laptops[laptop_codename].configs)) { if (config.price >= minPrice && config.price <= maxPrice) return true; } return false; })
           .sort((a_codename, b_codename) => laptops[a_codename].name.brand.localeCompare(laptops[b_codename].name.brand))
           .map((laptop_codename, i) => html`<${Laptop} key=${i} cpus=${cpus} rams=${rams} oses=${oses} laptops=${laptops} laptop_codename=${laptop_codename} />`)}
-        <div><iframe src="https://github.com/sponsors/dawsonfrakes/button" title="Sponsor dawsonfrakes" height="32" width="114" style="border: 0; border-radius: 6px;"></iframe></div>
+        <div><iframe src="https://github.com/sponsors/dawsonfrakes/button" title="Sponsor dawsonfrakes" height="32" width="114" style=${{border: "0", borderRadius: "6px"}}></iframe></div>
       `;
     };
 
     (async () => {
       const response = await fetch("./data.json");
       const json = await response.json();
-      render(html`<${App} laptops=${json.laptops} cpus=${json.cpus} rams=${json.rams} oses=${json.oses} />`, document.body);
+      ReactDOMClient.createRoot(document.body).render(html`<${App} laptops=${json.laptops} cpus=${json.cpus} rams=${json.rams} oses=${json.oses} />`, document.body);
     })();
   </script>
 </body>
