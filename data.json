@@ -1,5 +1,17 @@
 {
   "cpus": {
+    "AMD340": {
+      "brand": "AMD",
+      "lineup": "Ryzen",
+      "sublineup": "AI 5",
+      "model": "340"
+    },
+    "AMD350": {
+      "brand": "AMD",
+      "lineup": "Ryzen",
+      "sublineup": "AI 7",
+      "model": "350"
+    },
     "AMD370": {
       "brand": "AMD",
       "lineup": "Ryzen",
@@ -20,8 +32,18 @@
     }
   },
   "rams": {
+    "NONE": {
+    },
     "DDR5_5600_8GB": {
       "amount": 8,
+      "amount_units": "GB",
+      "kind": "DDR5",
+      "speed": 5600,
+      "speed_units": "MHz",
+      "soldered": false
+    },
+    "DDR5_5600_16GB": {
+      "amount": 16,
       "amount_units": "GB",
       "kind": "DDR5",
       "speed": 5600,
@@ -73,6 +95,46 @@
       "model": "Pro"
     }
   },
+  "displays": {
+    "13_5in_IPS_2256_1504_60hz_matte": {
+      "size_inches": 13.5,
+      "kind": "IPS",
+      "resolution_x": 2256,
+      "resolution_y": 1504,
+      "refresh_rate": 60,
+      "finish": "matte"
+    },
+    "13_5in_IPS_2880_1920_120hz_matte": {
+      "size_inches": 13.5,
+      "kind": "IPS",
+      "resolution_x": 2880,
+      "resolution_y": 1920,
+      "refresh_rate": 120,
+      "finish": "matte"
+    }
+  },
+  "drives": {
+    "NONE": {
+      "size": 0,
+      "size_units": "GB"
+    },
+    "500GB_2280": {
+      "size": 500,
+      "size_units": "GB"
+    },
+    "1TB_2280": {
+      "size": 1,
+      "size_units": "TB"
+    },
+    "2TB_2280": {
+      "size": 2,
+      "size_units": "TB"
+    },
+    "4TB_2280": {
+      "size": 4,
+      "size_units": "TB"
+    }
+  },
   "laptops": {
     "fw13": {
       "link": "https://frame.work/products/laptop13-diy-amd-ai300",
@@ -89,8 +151,11 @@
         "Price"
       ],
       "configs": {
-        "AMD370|DDR5_5600_8GB|NONE": {
-          "price": 1809
+        "AMD340|NONE|NONE|13_5in_IPS_2256_1504_60hz_matte|NONE": {
+          "price": 998
+        },
+        "AMD340|NONE|NONE|13_5in_IPS_2880_1920_120hz_matte|NONE": {
+          "price": 1128
         }
       }
     },
@@ -112,10 +177,10 @@
         "Price"
       ],
       "configs": {
-        "AMD395|LPDDR5X32GB8000|WINDOWS11HOME": {
+        "AMD395|LPDDR5X32GB8000|WINDOWS11HOME|13_5in_IPS_2256_1504_60hz_matte|NONE": {
           "price": 2300
         },
-        "AMD395|LPDDR5X64GB8000|WINDOWS11HOME": {
+        "AMD395|LPDDR5X64GB8000|WINDOWS11HOME|13_5in_IPS_2256_1504_60hz_matte|NONE": {
           "price": 2400
         }
       }
@@ -135,7 +200,7 @@
         "Price"
       ],
       "configs": {
-        "INTEL226V|LPDDR5X16GB8533|WINDOWS11HOME": {
+        "INTEL226V|LPDDR5X16GB8533|WINDOWS11HOME|13_5in_IPS_2256_1504_60hz_matte|NONE": {
           "price": 1870
         }
       }

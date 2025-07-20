@@ -23,23 +23,27 @@
       }
     };
 
-    const Config = ({cpus, rams, oses, laptop, config}) => {
-      const [cpu_codename, ram_codename, os_codename] = config.split("|");
+    const Config = ({cpus, rams, oses, displays, drives, laptop, config}) => {
+      const [cpu_codename, ram_codename, os_codename, display_codename, drive_codename] = config.split("|");
       const cpu = cpus[cpu_codename];
       const ram = rams[ram_codename];
       const os = oses[os_codename];
+      const display = displays[display_codename];
+      const drive = drives[drive_codename];
 
       return html`
         <p>
           <span>CPU: ${cpu.brand} ${cpu.lineup} ${cpu.sublineup} ${cpu.model} | </span>
-          <span>RAM: ${ram.amount}${ram.amount_units} ${ram.kind}-${ram.speed}${ram.speed_units} ${ram.soldered ? "Soldered" : "Non-soldered"} | </span>
+          <span>RAM: ${ram_codename !== "NONE" ? `${ram.amount}${ram.amount_units} ${ram.kind}-${ram.speed}${ram.speed_units} ${ram.soldered ? "Soldered" : "Non-soldered"}` : "None"} | </span>
           <span>OS: ${os.brand} ${os.lineup} ${os.sublineup} ${os.model} | </span>
-          Price: ${new Intl.NumberFormat("en-us", {style: "currency", currency: "USD", maximumFractionDigits: 0}).format(laptop.configs[config].price)}
+          <span>Display: ${display_codename !== "NONE" ? `${display.size_inches}" ${display.kind} ${display.resolution_x}x${display.resolution_y} ${display.refresh_rate}hz ${display.finish}` : "None"} | </span>
+          <span>Drive: ${drive_codename !== "NONE" ? `${drive.size} ${drive.size_units}` : "None"} | </span>
+          <span>Price: ${new Intl.NumberFormat("en-us", {style: "currency", currency: "USD", maximumFractionDigits: 0}).format(laptop.configs[config].price)}</span>
         </p>
       `;
     };
 
-    const Laptop = ({cpus, rams, oses, laptops, laptop_codename, sortType}) => {
+    const Laptop = ({cpus, rams, oses, displays, drives, laptops, laptop_codename, sortType}) => {
       const [imageLoaded, setImageLoaded] = useState(false);
 
       const laptop = laptops[laptop_codename];
@@ -63,7 +67,7 @@
           <a style=${name_style} href=${laptop.link}>${laptop.name.brand} ${laptop.name.lineup} ${laptop.name.sublineup} ${laptop.name.model}</a>
           <fieldset>
             <legend>Configurations</legend>
-            ${Object.keys(laptop.configs).sort((a, b) => sortConfig(laptops, rams, laptop_codename, laptop_codename, a, b, sortType)).map((config, i) => html`<${Config} key=${i} cpus=${cpus} rams=${rams} oses=${oses} laptop=${laptop} config=${config} />`)}
+            ${Object.keys(laptop.configs).sort((a, b) => sortConfig(laptops, rams, laptop_codename, laptop_codename, a, b, sortType)).map((config, i) => html`<${Config} key=${i} cpus=${cpus} rams=${rams} oses=${oses} displays=${displays} drives=${drives} laptop=${laptop} config=${config} />`)}
           </fieldset>
           <p>Pros: ${laptop.pros.join(" | ")}</p>
           <p>Cons: ${laptop.cons.join(" | ")}</p>
@@ -95,7 +99,7 @@
       `;
     };
 
-    const App = ({laptops, cpus, rams, oses}) => {
+    const App = ({laptops, cpus, rams, oses, displays, drives}) => {
       const id = useId();
 
       const allBrands = Object.entries(laptops).reduce((acc, [key, value]) => { acc.push(value.name.brand); return acc; }, []).sort();
@@ -106,6 +110,10 @@
       const [ramFilters, setRamFilters] = useState(allRams.map(ram => true));
       const allOses = [...new Set(Object.entries(laptops).reduce((acc, [key, value]) => { Object.keys(value.configs).forEach(config => acc.push(config.split("|")[2])); return acc; }, []).sort())];
       const [osFilters, setOsFilters] = useState(allOses.map(os => true));
+      const allDisplays = [...new Set(Object.entries(laptops).reduce((acc, [key, value]) => { Object.keys(value.configs).forEach(config => acc.push(config.split("|")[3])); return acc; }, []).sort())];
+      const [displayFilters, setDisplayFilters] = useState(allDisplays.map(os => true));
+      const allDrives = [...new Set(Object.entries(laptops).reduce((acc, [key, value]) => { Object.keys(value.configs).forEach(config => acc.push(config.split("|")[4])); return acc; }, []).sort())];
+      const [driveFilters, setDriveFilters] = useState(allDrives.map(os => true));
       const [minPrice, setMinPrice] = useState(0);
       const absMaxConfigPrice = Object.entries(laptops).reduce((acc, [key, value]) => Math.max(acc, Object.entries(value.configs).reduce((acc2, [key, value]) => Math.max(acc2, value.price), 0)), 0);
       const [maxPrice, setMaxPrice] = useState(absMaxConfigPrice);
@@ -131,8 +139,10 @@
             <legend>Filter</legend>
             <${FilterSelector} name="Brand" all=${allBrands} filters=${brandFilters} setFilters=${setBrandFilters} itemNameFormatter=${value => value} />
             <${FilterSelector} name="CPU Type" all=${allCpus} filters=${cpuFilters} setFilters=${setCpuFilters} itemNameFormatter=${cpu => `${cpus[cpu].brand} ${cpus[cpu].lineup} ${cpus[cpu].sublineup} ${cpus[cpu].model}`} />
-            <${FilterSelector} name="Ram Type" all=${allRams} filters=${ramFilters} setFilters=${setRamFilters} itemNameFormatter=${ram => `${rams[ram].amount}${rams[ram].amount_units} ${rams[ram].kind}-${rams[ram].speed}${rams[ram].speed_units} ${rams[ram].soldered ? "Soldered" : "Non-soldered"}`} />
+            <${FilterSelector} name="Ram Type" all=${allRams} filters=${ramFilters} setFilters=${setRamFilters} itemNameFormatter=${ram => ram !== "NONE" ? `${rams[ram].amount}${rams[ram].amount_units} ${rams[ram].kind}-${rams[ram].speed}${rams[ram].speed_units} ${rams[ram].soldered ? "Soldered" : "Non-soldered"}` : "None"} />
             <${FilterSelector} name="Operating System" all=${allOses} filters=${osFilters} setFilters=${setOsFilters} itemNameFormatter=${os => `${oses[os].brand} ${oses[os].lineup} ${oses[os].sublineup} ${oses[os].model}`} />
+            <${FilterSelector} name="Display" all=${allDisplays} filters=${displayFilters} setFilters=${setDisplayFilters} itemNameFormatter=${display => display !== "NONE" ? `${displays[display].size_inches}" ${displays[display].kind} ${displays[display].resolution_x}x${displays[display].resolution_y} ${displays[display].refresh_rate}hz ${displays[display].finish}` : "None"} />
+            <${FilterSelector} name="Drive" all=${allDrives} filters=${driveFilters} setFilters=${setDriveFilters} itemNameFormatter=${drive => drive !== "NONE" ? `${drives[drive].size} ${drives[drive].size_units}` : "None"} />
             <ul>
               <li>
                 <label for=${id + "-min-price"}>Minimum Price: $</label>
@@ -182,16 +192,18 @@
           .filter(laptop_codename => { for (const config in laptops[laptop_codename].configs) { if (cpuFilters[allCpus.indexOf(config.split("|")[0])]) return true; } return false; })
           .filter(laptop_codename => { for (const config in laptops[laptop_codename].configs) { if (ramFilters[allRams.indexOf(config.split("|")[1])]) return true; } return false; })
           .filter(laptop_codename => { for (const config in laptops[laptop_codename].configs) { if (osFilters[allOses.indexOf(config.split("|")[2])]) return true; } return false; })
+          .filter(laptop_codename => { for (const config in laptops[laptop_codename].configs) { if (displayFilters[allDisplays.indexOf(config.split("|")[3])]) return true; } return false; })
+          .filter(laptop_codename => { for (const config in laptops[laptop_codename].configs) { if (driveFilters[allDrives.indexOf(config.split("|")[4])]) return true; } return false; })
           .filter(laptop_codename => { for (const config of Object.values(laptops[laptop_codename].configs)) { if (config.price >= minPrice && config.price <= maxPrice) return true; } return false; })
           .sort((a_codename, b_codename) => sortConfig(laptops, rams, a_codename, b_codename, Object.keys(laptops[a_codename].configs)[0], Object.keys(laptops[b_codename].configs)[0], sortType))
-          .map((laptop_codename, i) => html`<${Laptop} key=${i} cpus=${cpus} rams=${rams} oses=${oses} laptops=${laptops} laptop_codename=${laptop_codename} sortType=${sortType} />`)}
+          .map((laptop_codename, i) => html`<${Laptop} key=${i} cpus=${cpus} rams=${rams} oses=${oses} displays=${displays} drives=${drives} laptops=${laptops} laptop_codename=${laptop_codename} sortType=${sortType} />`)}
       `;
     };
 
     (async () => {
       const response = await fetch("./data.json");
       const json = await response.json();
-      ReactDOMClient.createRoot(document.body).render(html`<${App} laptops=${json.laptops} cpus=${json.cpus} rams=${json.rams} oses=${json.oses} />`, document.body);
+      ReactDOMClient.createRoot(document.body).render(html`<${App} laptops=${json.laptops} cpus=${json.cpus} rams=${json.rams} oses=${json.oses} displays=${json.displays} drives=${json.drives} />`, document.body);
     })();
   </script>
 </body>
