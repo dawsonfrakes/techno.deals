@@ -124,9 +124,9 @@
             color: lightgray;
           }
         </style>
-        <h1 style=${{textShadow: "#fc0000 1px 0 10px"}}>TechnoDeals</h1>
+        <h1 style=${{textShadow: "#0000fc 1px 0 10px"}}>TechnoDeals</h1>
         <p></p>
-        <div style=${{display: "flex", flexWrap: "wrap", alignItems: "start", justifyContent: "center"}}>
+        <div style=${{display: "flex", flexWrap: "wrap", alignItems: "start", justifyContent: "space-around"}}>
           <fieldset>
             <legend>Filter</legend>
             <${FilterSelector} name="Brand" all=${allBrands} filters=${brandFilters} setFilters=${setBrandFilters} itemNameFormatter=${value => value} />
@@ -167,6 +167,15 @@
               <label for=${id + "-price-high-sort"}>Price (High-to-low)</label>
             </div>
           </fieldset>
+          <div style=${{display: "flex", flexDirection: "column", alignItems: "center"}}>
+            <p style=${{maxWidth: "250px"}}>This site is hosted on GitHub and you are welcome to edit its content and/or support monetarily using the buttons below.</p>
+            <a href="https://github.com/dawsonfrakes/techno.deals" style=${{backgroundColor: "#212830", textDecoration: "none", fontSize: "12px", fontWeight: "600", marginBottom: "5px", border: "1px #3d444d solid", width: "114px", height: "32px", borderRadius: "6px", display: "flex", justifyContent: "center", alignItems: "center"}}>Edit on GitHub</a>
+            <iframe src="https://github.com/sponsors/dawsonfrakes/button" title="Sponsor dawsonfrakes" width="114" height="32" style=${{border: "0", borderRadius: "6px"}}></iframe>
+          </div>
+          <div>
+            <p style=${{maxWidth: "250px"}}>Notice: This site uses affiliate links for most products referenced so the creators of this website will get a percentage of sales for devices purchased using our links.
+              This helps support the developers to keep the site updated with the latest information at no cost to you.</p>
+          </div>
         </div>
         ${Object.keys(laptops)
           .filter(laptop_codename => brandFilters[allBrands.indexOf(laptops[laptop_codename].name.brand)])
@@ -176,7 +185,6 @@
           .filter(laptop_codename => { for (const config of Object.values(laptops[laptop_codename].configs)) { if (config.price >= minPrice && config.price <= maxPrice) return true; } return false; })
           .sort((a_codename, b_codename) => sortConfig(laptops, rams, a_codename, b_codename, Object.keys(laptops[a_codename].configs)[0], Object.keys(laptops[b_codename].configs)[0], sortType))
           .map((laptop_codename, i) => html`<${Laptop} key=${i} cpus=${cpus} rams=${rams} oses=${oses} laptops=${laptops} laptop_codename=${laptop_codename} sortType=${sortType} />`)}
-        <div><iframe src="https://github.com/sponsors/dawsonfrakes/button" title="Sponsor dawsonfrakes" height="32" width="114" style=${{border: "0", borderRadius: "6px"}}></iframe></div>
       `;
     };
 
