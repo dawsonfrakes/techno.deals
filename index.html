@@ -50,9 +50,10 @@
             </a>
           </div>
           <a style=${name_style} href=${laptop.link}>${laptop.name.brand} ${laptop.name.lineup} ${laptop.name.sublineup} ${laptop.name.model}</a>
-          <ul>
-            ${Object.keys(laptop.configs).map((config, i) => html`<li key=${i}><${Config} key=${i} cpus=${cpus} rams=${rams} oses=${oses} laptop=${laptop} config=${config} /></li>`)}
-          </ul>
+          <fieldset>
+            <legend>Configurations</legend>
+            ${Object.keys(laptop.configs).map((config, i) => html`<${Config} key=${i} cpus=${cpus} rams=${rams} oses=${oses} laptop=${laptop} config=${config} />`)}
+          </fieldset>
           <p>Pros: ${laptop.pros.join(" | ")}</p>
           <p>Cons: ${laptop.cons.join(" | ")}</p>
         </div>
@@ -97,6 +98,7 @@
       const [minPrice, setMinPrice] = useState(0);
       const absMaxConfigPrice = Object.entries(laptops).reduce((acc, [key, value]) => Math.max(acc, Object.entries(value.configs).reduce((acc2, [key, value]) => Math.max(acc2, value.price), 0)), 0);
       const [maxPrice, setMaxPrice] = useState(absMaxConfigPrice);
+      const [sortType, setSortType] = useState("brand-name");
 
       return html`
         <style>
@@ -131,11 +133,15 @@
               </li>
             </ul>
           </fieldset>
-          <fieldset>
+          <fieldset onInput=${e => setSortType(e.target.value)}>
             <legend>Sort</legend>
             <div>
-              <input id=${id + "-brand-name-sort"} type="radio" checked />
+              <input id=${id + "-brand-name-sort"} type="radio" name="sort-type" value="brand-name" defaultChecked="true" />
               <label for=${id + "-brand-name-sort"}>Brand Name</label>
+            </div>
+            <div>
+              <input id=${id + "-ram-size-sort"} type="radio" name="sort-type" value="ram-size" />
+              <label for=${id + "-ram-size-sort"}>RAM Size</label>
             </div>
           </fieldset>
         </div>
@@ -145,7 +151,7 @@
           .filter(laptop_codename => { for (const config in laptops[laptop_codename].configs) { if (ramFilters[allRams.indexOf(config.split("|")[1])]) return true; } return false; })
           .filter(laptop_codename => { for (const config in laptops[laptop_codename].configs) { if (osFilters[allOses.indexOf(config.split("|")[2])]) return true; } return false; })
           .filter(laptop_codename => { for (const config of Object.values(laptops[laptop_codename].configs)) { if (config.price >= minPrice && config.price <= maxPrice) return true; } return false; })
-          .sort((a_codename, b_codename) => laptops[a_codename].name.brand.localeCompare(laptops[b_codename].name.brand))
+          .sort((a_codename, b_codename) => sortType === "brand-name" ? laptops[a_codename].name.brand.localeCompare(laptops[b_codename].name.brand) : rams[Object.keys(laptops[a_codename].configs)[0].split("|")[1]].amount - rams[Object.keys(laptops[b_codename].configs)[0].split("|")[1]].amount)
           .map((laptop_codename, i) => html`<${Laptop} key=${i} cpus=${cpus} rams=${rams} oses=${oses} laptops=${laptops} laptop_codename=${laptop_codename} />`)}
         <div><iframe src="https://github.com/sponsors/dawsonfrakes/button" title="Sponsor dawsonfrakes" height="32" width="114" style=${{border: "0", borderRadius: "6px"}}></iframe></div>
       `;
