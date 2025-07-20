@@ -141,7 +141,19 @@
             </div>
             <div>
               <input id=${id + "-ram-size-sort"} type="radio" name="sort-type" value="ram-size" />
-              <label for=${id + "-ram-size-sort"}>RAM Size</label>
+              <label for=${id + "-ram-size-sort"}>RAM Size (Low-to-high)</label>
+            </div>
+            <div>
+              <input id=${id + "-ram-size-high-sort"} type="radio" name="sort-type" value="ram-size-highest" />
+              <label for=${id + "-ram-size-high-sort"}>RAM Size (High-to-low)</label>
+            </div>
+            <div>
+              <input id=${id + "-price-sort"} type="radio" name="sort-type" value="price" />
+              <label for=${id + "-price-sort"}>Price (Low-to-high)</label>
+            </div>
+            <div>
+              <input id=${id + "-price-high-sort"} type="radio" name="sort-type" value="price-highest" />
+              <label for=${id + "-price-high-sort"}>Price (High-to-low)</label>
             </div>
           </fieldset>
         </div>
@@ -151,7 +163,16 @@
           .filter(laptop_codename => { for (const config in laptops[laptop_codename].configs) { if (ramFilters[allRams.indexOf(config.split("|")[1])]) return true; } return false; })
           .filter(laptop_codename => { for (const config in laptops[laptop_codename].configs) { if (osFilters[allOses.indexOf(config.split("|")[2])]) return true; } return false; })
           .filter(laptop_codename => { for (const config of Object.values(laptops[laptop_codename].configs)) { if (config.price >= minPrice && config.price <= maxPrice) return true; } return false; })
-          .sort((a_codename, b_codename) => sortType === "brand-name" ? laptops[a_codename].name.brand.localeCompare(laptops[b_codename].name.brand) : rams[Object.keys(laptops[a_codename].configs)[0].split("|")[1]].amount - rams[Object.keys(laptops[b_codename].configs)[0].split("|")[1]].amount)
+          .sort((a_codename, b_codename) => {
+            switch (sortType) {
+              case "brand-name": return laptops[a_codename].name.brand.localeCompare(laptops[b_codename].name.brand);
+              case "ram-size": return rams[Object.keys(laptops[a_codename].configs)[0].split("|")[1]].amount - rams[Object.keys(laptops[b_codename].configs)[0].split("|")[1]].amount;
+              case "ram-size-highest": return rams[Object.keys(laptops[b_codename].configs)[0].split("|")[1]].amount - rams[Object.keys(laptops[a_codename].configs)[0].split("|")[1]].amount;
+              case "price": return Object.values(laptops[a_codename].configs)[0].price - Object.values(laptops[b_codename].configs)[0].price;
+              case "price-highest": return Object.values(laptops[b_codename].configs)[0].price - Object.values(laptops[a_codename].configs)[0].price;
+              default: console.assert(false); break;
+            }
+          })
           .map((laptop_codename, i) => html`<${Laptop} key=${i} cpus=${cpus} rams=${rams} oses=${oses} laptops=${laptops} laptop_codename=${laptop_codename} />`)}
         <div><iframe src="https://github.com/sponsors/dawsonfrakes/button" title="Sponsor dawsonfrakes" height="32" width="114" style=${{border: "0", borderRadius: "6px"}}></iframe></div>
       `;
