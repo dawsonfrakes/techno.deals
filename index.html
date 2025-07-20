@@ -12,6 +12,17 @@
     import htm from "https://esm.sh/htm";
     const html = htm.bind(createElement);
 
+    const sortConfig = (laptops, rams, a_codename, b_codename, a_config, b_config, sortType) => {
+      switch (sortType) {
+        case "brand-name": return laptops[a_codename].name.brand.localeCompare(laptops[b_codename].name.brand);
+        case "ram-size": return rams[a_config.split("|")[1]].amount - rams[b_config.split("|")[1]].amount;
+        case "ram-size-highest": return rams[b_config.split("|")[1]].amount - rams[a_config.split("|")[1]].amount;
+        case "price": return laptops[a_codename].configs[a_config].price - laptops[b_codename].configs[b_config].price;
+        case "price-highest": return laptops[b_codename].configs[b_config].price - laptops[a_codename].configs[a_config].price;
+        default: console.assert(false); break;
+      }
+    };
+
     const Config = ({cpus, rams, oses, laptop, config}) => {
       const [cpu_codename, ram_codename, os_codename] = config.split("|");
       const cpu = cpus[cpu_codename];
@@ -28,7 +39,7 @@
       `;
     };
 
-    const Laptop = ({cpus, rams, oses, laptops, laptop_codename}) => {
+    const Laptop = ({cpus, rams, oses, laptops, laptop_codename, sortType}) => {
       const [imageLoaded, setImageLoaded] = useState(false);
 
       const laptop = laptops[laptop_codename];
@@ -52,7 +63,7 @@
           <a style=${name_style} href=${laptop.link}>${laptop.name.brand} ${laptop.name.lineup} ${laptop.name.sublineup} ${laptop.name.model}</a>
           <fieldset>
             <legend>Configurations</legend>
-            ${Object.keys(laptop.configs).map((config, i) => html`<${Config} key=${i} cpus=${cpus} rams=${rams} oses=${oses} laptop=${laptop} config=${config} />`)}
+            ${Object.keys(laptop.configs).sort((a, b) => sortConfig(laptops, rams, laptop_codename, laptop_codename, a, b, sortType)).map((config, i) => html`<${Config} key=${i} cpus=${cpus} rams=${rams} oses=${oses} laptop=${laptop} config=${config} />`)}
           </fieldset>
           <p>Pros: ${laptop.pros.join(" | ")}</p>
           <p>Cons: ${laptop.cons.join(" | ")}</p>
@@ -163,17 +174,8 @@
           .filter(laptop_codename => { for (const config in laptops[laptop_codename].configs) { if (ramFilters[allRams.indexOf(config.split("|")[1])]) return true; } return false; })
           .filter(laptop_codename => { for (const config in laptops[laptop_codename].configs) { if (osFilters[allOses.indexOf(config.split("|")[2])]) return true; } return false; })
           .filter(laptop_codename => { for (const config of Object.values(laptops[laptop_codename].configs)) { if (config.price >= minPrice && config.price <= maxPrice) return true; } return false; })
-          .sort((a_codename, b_codename) => {
-            switch (sortType) {
-              case "brand-name": return laptops[a_codename].name.brand.localeCompare(laptops[b_codename].name.brand);
-              case "ram-size": return rams[Object.keys(laptops[a_codename].configs)[0].split("|")[1]].amount - rams[Object.keys(laptops[b_codename].configs)[0].split("|")[1]].amount;
-              case "ram-size-highest": return rams[Object.keys(laptops[b_codename].configs)[0].split("|")[1]].amount - rams[Object.keys(laptops[a_codename].configs)[0].split("|")[1]].amount;
-              case "price": return Object.values(laptops[a_codename].configs)[0].price - Object.values(laptops[b_codename].configs)[0].price;
-              case "price-highest": return Object.values(laptops[b_codename].configs)[0].price - Object.values(laptops[a_codename].configs)[0].price;
-              default: console.assert(false); break;
-            }
-          })
-          .map((laptop_codename, i) => html`<${Laptop} key=${i} cpus=${cpus} rams=${rams} oses=${oses} laptops=${laptops} laptop_codename=${laptop_codename} />`)}
+          .sort((a_codename, b_codename) => sortConfig(laptops, rams, a_codename, b_codename, Object.keys(laptops[a_codename].configs)[0], Object.keys(laptops[b_codename].configs)[0], sortType))
+          .map((laptop_codename, i) => html`<${Laptop} key=${i} cpus=${cpus} rams=${rams} oses=${oses} laptops=${laptops} laptop_codename=${laptop_codename} sortType=${sortType} />`)}
         <div><iframe src="https://github.com/sponsors/dawsonfrakes/button" title="Sponsor dawsonfrakes" height="32" width="114" style=${{border: "0", borderRadius: "6px"}}></iframe></div>
       `;
     };
